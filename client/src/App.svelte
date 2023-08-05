@@ -6,6 +6,9 @@
     let socket: WebSocket;
     let userId: string;
 
+    let value: string = '';
+    let previousValue: string = '';
+
     onMount(() => {
         socket = new WebSocket('ws://localhost:3333');
 
@@ -16,11 +19,12 @@
 
         socket.onmessage = (message) => {
             const {type, data} = JSON.parse(message.data);
+            console.log(type, data)
 
             if (type === MessageType.Words) {
                 const textarea = document.querySelector('textarea');
 
-                textarea.value = data.text;
+                textarea.value = previousValue = value = data.text;
                 textarea.scrollTop = textarea.scrollHeight;
                 textarea.focus()
             }
@@ -31,9 +35,6 @@
         };
     });
 
-    let value: string = '';
-    let previousValue: string = '';
-
     function handleInput(event: Event) {
         const target = event.target as HTMLTextAreaElement;
 
@@ -43,15 +44,18 @@
             return;
         }
 
-        previousValue = value = target.value;
+        const lastInput = target.value.slice(previousValue.length);
+        console.log(lastInput)
 
-        const char = value.slice(-1);
-        const timestamp = new Date().toISOString();
+        lastInput.split('').forEach((char) => {
+            const timestamp = new Date().toISOString();
+            socket.send(JSON.stringify({
+                char,
+                timestamp
+            }));
+        });
 
-        socket.send(JSON.stringify({
-            char,
-            timestamp
-        }));
+        previousValue = target.value;
     }
 </script>
 

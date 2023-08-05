@@ -14,3 +14,8 @@ export type Word = {
     userId: string;
 }
 
+export type Letter = {
+    letter: string;
+    timestamp: number;
+}
+

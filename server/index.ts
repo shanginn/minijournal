@@ -1,14 +1,14 @@
 import {v4 as uuid} from 'uuid';
 import cookie from 'cookie';
 import {Database, Statement} from "bun:sqlite";
-import {Message, MessageType, Word} from "../shared/types.ts";
+import {Message, MessageType, Word, Letter} from "../shared/types.ts";
 
 const db = new Database(":memory:");//, {create: true});
 
 db.run(`
-    CREATE TABLE IF NOT EXISTS words (
+    CREATE TABLE IF NOT EXISTS letters (
         userId TEXT NOT NULL,
-        word TEXT NOT NULL,
+        letter TEXT NOT NULL,
         timestamp INTEGER NOT NULL
     );
 `);
@@ -16,42 +16,51 @@ db.run(`
 class WordProcessor {
     private readonly db: Database;
     private readonly userId: string;
-    private memory: Map<string, string> = new Map();
+    private memory: Map<string, Letter[]> = new Map();
 
     constructor(userId: string, db: Database) {
         this.userId = userId;
         this.db = db;
     }
 
-    processChar(char: string, timestamp: number) {
-        const word = this.memory.get(this.userId) || '';
-        const newWord = word + char;
+    processLetter(letter: Letter) {
+        const letters = this.memory.get(this.userId) || [];
+        letters.push(letter);
 
-        this.memory.set(this.userId, newWord);
+        this.memory.set(this.userId, letters);
 
-        if (newWord.length >= 3) {
-            this.addWord(newWord, timestamp);
-            this.memory.set(this.userId, '');
+        if (letters.length >= 10) {
+            this.saveLetters(letters);
+            this.memory.set(this.userId, []);
         }
     }
 
-    addWord(word: string, timestamp: number) {
-        const query = this.db.query(`
-            INSERT INTO words (userId, word, timestamp)
-            VALUES ($userId, $word, $timestamp)
-        `);
+    saveLetters(letters: Letter[]) {
+        const insertQuery = this.db.prepare(
+            `INSERT INTO letters (userId, letter, timestamp) VALUES ($userId, $letter, $timestamp)`
+        )
 
-        query.run({
-            $userId: this.userId,
-            $word: word,
-            $timestamp: timestamp
-        });
+        const insert = this.db.transaction(
+            (letters: Letter[]) => {
+                for (const letter of letters) {
+                    insertQuery.run({
+                        $userId: this.userId,
+                        $letter: letter.letter,
+                        $timestamp: letter.timestamp
+                    });
+                }
+
+                return letters.length;
+            }
+        )
+
+        insert.immediate(letters);
     }
 
-    getWords() {
-        const query: Statement<Word> = this.db.query(`
-            SELECT word, timestamp, userId
-            FROM words
+    getLetters() {
+        const query: Statement<Letter> = this.db.query(`
+            SELECT letter, timestamp
+            FROM letters
             WHERE userId = $userId
             ORDER BY timestamp ASC
         `);
@@ -59,6 +68,14 @@ class WordProcessor {
         return query.all({
             $userId: this.userId
         });
+    }
+
+    flush(timestamp: number) {
+        const remainingLetters = this.memory.get(this.userId) || null;
+        if (remainingLetters) {
+            this.saveLetters(remainingLetters);
+            this.memory.set(this.userId, []);
+        }
     }
 }
 
@@ -93,9 +110,9 @@ const server = Bun.serve<{ userId: string }>({
             const {userId} = ws.data;
 
             // Get the words for the user
-            const words = processors.get(userId)?.getWords() || [];
+            const letters = processors.get(userId)?.getLetters() || [];
 
-            const text = words.map(({word}) => word).join('');
+            const text = letters.map((letter) => letter.letter).join('');
 
             // Send the words back to the client
             const message: Message = {
@@ -108,18 +125,14 @@ const server = Bun.serve<{ userId: string }>({
             ws.send(JSON.stringify(message));
         },
         async message(ws, message) {
-            console.log(`Received ${message}`);
             const {userId} = ws.data;
 
             const {char, timestamp} = JSON.parse(message.toString());
-            processors.get(userId)?.processChar(char, timestamp);
-
-            const echoMessage: Message = {
-                type: MessageType.Echo,
-                data: {char, timestamp}
-            }
-
-            ws.send(JSON.stringify(echoMessage));
+            processors.get(userId)?.processLetter({letter: char, timestamp});
+        },
+        async close(ws) {
+            const {userId} = ws.data;
+            processors.get(userId)?.flush(Date.now());
         },
     },
 });
