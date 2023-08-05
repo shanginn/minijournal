@@ -1,0 +1,17 @@
+{
+  "name": "minijournal-server",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/uuid": "^9.0.2",
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/cookie": "^0.5.1",
+    "cookie": "^0.5.0",
+    "uuid": "^9.0.0"
+  }
+}
