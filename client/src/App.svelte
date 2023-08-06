@@ -1,8 +1,22 @@
+<style>
+    textarea {
+        overflow-y: auto;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        & {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    }
+</style>
+
 <script lang="ts">
     import {onMount} from 'svelte';
     import cookie from "cookie";
     import {MessageType} from "../../shared/types";
-    import {beforeUpdate} from 'svelte';
 
     let socket: WebSocket;
     let userId: string;
@@ -13,6 +27,7 @@
     const focus = (textarea: HTMLTextAreaElement) => {
         textarea.focus();
         textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        textarea.scrollTop = textarea.scrollHeight;
     }
 
     onMount(() => {
@@ -30,7 +45,6 @@
                 const textarea = document.querySelector('textarea');
 
                 textarea.value = previousValue = value = data.text;
-                textarea.scrollTop = textarea.scrollHeight;
                 focus(textarea);
             }
         };
@@ -50,7 +64,6 @@
         }
 
         const lastInput = target.value.slice(previousValue.length);
-        console.log(lastInput)
 
         lastInput.split('').forEach((char) => {
             const timestamp = new Date().toISOString();
@@ -61,6 +74,7 @@
         });
 
         previousValue = target.value;
+        focus(target);
     }
 
     const focusTextarea = (event: InputEvent) => {
@@ -86,10 +100,11 @@
           class="
             h-full w-full
             resize-none
-            p-5
+            px-5 pt-5 pb-96
+
             border-none outline-none
-            text-lg
-            bg-amber-50
+            text-xl
+            overflow-y-auto
           "
           spellcheck="false"
           placeholder="Append-only textarea"
