@@ -3,7 +3,7 @@ import cookie from 'cookie';
 import {Database, Statement} from "bun:sqlite";
 import {Message, MessageType, Word, Letter} from "../shared/types.ts";
 
-const db = new Database(":memory:");//, {create: true});
+const db = new Database("db.sqlite", {create: true});
 
 db.run(`
     CREATE TABLE IF NOT EXISTS letters (

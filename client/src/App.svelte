@@ -2,12 +2,18 @@
     import {onMount} from 'svelte';
     import cookie from "cookie";
     import {MessageType} from "../../shared/types";
+    import {beforeUpdate} from 'svelte';
 
     let socket: WebSocket;
     let userId: string;
 
     let value: string = '';
     let previousValue: string = '';
+
+    const focus = (textarea: HTMLTextAreaElement) => {
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    }
 
     onMount(() => {
         socket = new WebSocket('ws://localhost:3333');
@@ -19,14 +25,13 @@
 
         socket.onmessage = (message) => {
             const {type, data} = JSON.parse(message.data);
-            console.log(type, data)
 
             if (type === MessageType.Words) {
                 const textarea = document.querySelector('textarea');
 
                 textarea.value = previousValue = value = data.text;
                 textarea.scrollTop = textarea.scrollHeight;
-                textarea.focus()
+                focus(textarea);
             }
         };
 
@@ -57,26 +62,34 @@
 
         previousValue = target.value;
     }
+
+    const focusTextarea = (event: InputEvent) => {
+        const target = event.target as HTMLTextAreaElement;
+        focus(target);
+    }
 </script>
 
 <main class="
     h-screen
+    overflow-hidden
     px-2
     sm:px-4
-    md:px-8
-    lg:px-16
-    xl:px-32
+    md:px-16
+    lg:px-32
+    xl:px-64
     2xl:px-64
 ">
   <textarea
           bind:value={value}
           on:input={handleInput}
+          on:beforeinput={focusTextarea}
           class="
             h-full w-full
             resize-none
-            bg-gray-100
             p-5
             border-none outline-none
+            text-lg
+            bg-amber-50
           "
           spellcheck="false"
           placeholder="Append-only textarea"
