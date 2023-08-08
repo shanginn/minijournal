@@ -3,6 +3,8 @@ import cookie from 'cookie';
 import {Database, Statement} from "bun:sqlite";
 import {Message, MessageType, Word, Letter} from "../shared/types.ts";
 
+const appPort = Bun.env.APP_PORT || "3333";
+
 const db = new Database("db.sqlite", {create: true});
 
 db.run(`
@@ -82,7 +84,7 @@ class WordProcessor {
 let processors: Map<string, WordProcessor> = new Map();
 
 const server = Bun.serve<{ userId: string }>({
-    port: 3333,
+    port: appPort,
     fetch(req, server) {
         const cookies = cookie.parse(req.headers.get("Cookie") || '');
         const userId = cookies["userId"] || uuid().toString();

@@ -1,15 +1,15 @@
 <style>
     textarea {
         overflow-y: auto;
+    }
 
-        &::-webkit-scrollbar {
-            display: none;
-        }
+    textarea::-webkit-scrollbar {
+        display: none;
+    }
 
-        & {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+    textarea {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
 </style>
 
@@ -17,6 +17,7 @@
     import {onMount} from 'svelte';
     import cookie from "cookie";
     import {MessageType} from "../../shared/types";
+    import {WS_URL} from "./env";
 
     let socket: WebSocket;
     let userId: string;
@@ -31,7 +32,7 @@
     }
 
     onMount(() => {
-        socket = new WebSocket('ws://localhost:3333');
+        socket = new WebSocket(WS_URL);
 
         socket.onopen = (data) => {
             userId = cookie.parse(document.cookie)['userId'];
@@ -92,6 +93,8 @@
     lg:px-32
     xl:px-64
     2xl:px-64
+    bg-amber-100
+    dark:bg-slate-950
 ">
   <textarea
           bind:value={value}
@@ -102,11 +105,17 @@
             resize-none
             px-5 pt-5 pb-96
 
+            bg-amber-100
+            text-neutral-950
+
+            dark:bg-slate-950
+            dark:text-sky-50
+
             border-none outline-none
             text-xl
             overflow-y-auto
           "
           spellcheck="false"
-          placeholder="Append-only textarea"
+          placeholder="Просто пиши"
   ></textarea>
 </main>

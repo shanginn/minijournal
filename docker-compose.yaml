@@ -1,0 +1,17 @@
+services:
+  server:
+    build:
+      context: server
+    environment:
+      - APP_PORT=${APP_PORT:-3333}
+    ports:
+      - "$APP_PORT:$APP_PORT"
+    volumes:
+      - ./server:/app
+      - ./shared:/shared
+    depends_on:
+      - db
+  frontend:
+    build:
+      context: client
+    environment:
