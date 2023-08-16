@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "minijournal.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "minijournal.selectorLabels" . | nindent 6 }}
@@ -37,6 +35,11 @@ spec:
             - name: websocket
               containerPort: {{ .Values.server_ws_port }}
               protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "minijournal.fullname" . }}-env
+            - secretRef:
+                name: {{ include "minijournal.fullname" . }}-secret
         - name: {{ .Chart.Name }}-client
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -44,18 +47,21 @@ spec:
           imagePullPolicy: {{ .Values.images.client.pullPolicy }}
           ports:
             - name: nginx
-              containerPort: 80
+              containerPort: {{ .Values.frontend_port }}
               protocol: TCP
           livenessProbe:
             httpGet:
               path: /
-              port: http
+              port: nginx
           readinessProbe:
             httpGet:
               path: /
-              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+              port: nginx
+          envFrom:
+            - configMapRef:
+                name: {{ include "minijournal.fullname" . }}-env
+            - secretRef:
+                name: {{ include "minijournal.fullname" . }}-secret
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

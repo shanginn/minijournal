@@ -1,3 +1,5 @@
+replicaCount: 1
+
 images:
   server:
     repository: ghcr.io/shanginn/minijournal-server
@@ -10,6 +12,9 @@ images:
 
 server_ws_port: 3333
 frontend_port: 80
+service:
+  type: NodePort
+  port: 30080
 
 serviceAccount:
   create: true
@@ -19,7 +24,7 @@ env:
   POSTGRES_HOST: pgsql-postgresql.pgsql
   POSTGRES_PORT: 5432
   POSTGRES_DB: minijournal
+  POSTGRES_USER: minijournal
 
 envSecrets:
   POSTGRES_PASSWORD: ""
-  POSTGRES_USER: ""

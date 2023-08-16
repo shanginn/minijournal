@@ -6,6 +6,15 @@ import postgres from 'postgres';
 
 const appPort = process.env.APP_PORT || "3333";
 
+console.log(process.env);
+
+console.log(
+    Bun.env.POSTGRES_HOST,
+    Bun.env.POSTGRES_PORT,
+    Bun.env.POSTGRES_DATABASE,
+    Bun.env.POSTGRES_USER
+);
+
 const sql = postgres({
     host: Bun.env.POSTGRES_HOST,
     port: parseInt(Bun.env.POSTGRES_PORT || "5432"),
