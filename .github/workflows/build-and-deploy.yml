@@ -69,4 +69,4 @@ jobs:
           cd helm
           helm upgrade minijournal --namespace=minijournal -f values.yaml . \
             --set=envSecrets.POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
-          kubectl rollout restart deployment --namespace=minijournal
+          kubectl rollout restart deployment

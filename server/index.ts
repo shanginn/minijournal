@@ -6,6 +6,14 @@ import postgres from 'postgres';
 
 const appPort = Bun.env.APP_PORT || "3333";
 
+console.log({
+    host: Bun.env.POSTGRES_HOST,
+    port: parseInt(Bun.env.POSTGRES_PORT || "5432"),
+    database: Bun.env.POSTGRES_DB,
+    username: Bun.env.POSTGRES_USER,
+    password: Bun.env.POSTGRES_PASSWORD,
+});
+
 const sql = postgres({
     host: Bun.env.POSTGRES_HOST,
     port: parseInt(Bun.env.POSTGRES_PORT || "5432"),
