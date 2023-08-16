@@ -4,21 +4,12 @@ import {Message, MessageType, Word, Letter} from "./types";
 
 import postgres from 'postgres';
 
-const appPort = process.env.APP_PORT || "3333";
-
-console.log(process.env);
-
-console.log(
-    Bun.env.POSTGRES_HOST,
-    Bun.env.POSTGRES_PORT,
-    Bun.env.POSTGRES_DATABASE,
-    Bun.env.POSTGRES_USER
-);
+const appPort = Bun.env.APP_PORT || "3333";
 
 const sql = postgres({
     host: Bun.env.POSTGRES_HOST,
     port: parseInt(Bun.env.POSTGRES_PORT || "5432"),
-    database: Bun.env.POSTGRES_DATABASE,
+    database: Bun.env.POSTGRES_DB,
     username: Bun.env.POSTGRES_USER,
     password: Bun.env.POSTGRES_PASSWORD,
 });
