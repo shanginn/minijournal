@@ -6,8 +6,9 @@ on:
 
 jobs:
   build:
-    name: Build and push Docker image to GitHub Container Registry
+    name: Build and push Docker images to GitHub Container Registry
     runs-on: ubuntu-latest
+    permissions: write-all
     strategy:
       fail-fast: false
       matrix:
