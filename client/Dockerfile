@@ -8,7 +8,6 @@ WORKDIR /app
 
 COPY --link . .
 RUN pnpm install
-
 RUN pnpm build
 
 FROM nginx:stable-alpine AS runner

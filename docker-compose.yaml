@@ -6,17 +6,18 @@ services:
       APP_PORT: ${APP_PORT:-3333}
     ports:
       - "${HOST_WS_PORT:-3333}:${APP_PORT:-3333}"
-    #    volumes:
-    #      - ./server:/app
+    volumes:
+      - ./server:/app
     depends_on:
       - db
+    command: bun --watch index.ts
   frontend:
     env_file:
       - .env
     build:
       context: client
-    #    volumes:
-    #      - ./client:/app
+    volumes:
+      - ./client:/app
     environment:
       VITE_WS_URL: "ws://host.docker.internal:3333"
     ports:
