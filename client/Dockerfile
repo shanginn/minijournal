@@ -6,8 +6,6 @@ RUN apk update
 RUN corepack enable && corepack prepare --activate pnpm@latest && pnpm config set store-dir .pnpm-store
 WORKDIR /app
 
-# First install the dependencies (as they change less often)
-COPY --link ../shared /shared
 COPY --link . .
 RUN pnpm install
 

@@ -16,7 +16,7 @@
 <script lang="ts">
     import {onMount} from 'svelte';
     import cookie from "cookie";
-    import {MessageType} from "../../shared/types";
+    import {MessageType} from "../types";
     import {WS_URL} from "./env";
 
     let socket: WebSocket;

@@ -1,8 +1,10 @@
+#syntax=docker/dockerfile:1.4
+
 FROM oven/bun:latest
 
-COPY --link ../shared /shared
-COPY --link . /app
 WORKDIR /app
+
+COPY --link . /app
 
 RUN bun install
 

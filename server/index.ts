@@ -1,7 +1,7 @@
 import {v4 as uuid} from 'uuid';
 import cookie from 'cookie';
 import {Database, Statement} from "bun:sqlite";
-import {Message, MessageType, Word, Letter} from "../shared/types.ts";
+import {Message, MessageType, Word, Letter} from "./types";
 
 const appPort = Bun.env.APP_PORT || "3333";
 

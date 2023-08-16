@@ -3,15 +3,36 @@ services:
     build:
       context: server
     environment:
-      - APP_PORT=${APP_PORT:-3333}
+      APP_PORT: ${APP_PORT:-3333}
     ports:
-      - "$APP_PORT:$APP_PORT"
-    volumes:
-      - ./server:/app
-      - ./shared:/shared
+      - "${HOST_WS_PORT:-3333}:${APP_PORT:-3333}"
+    #    volumes:
+    #      - ./server:/app
     depends_on:
       - db
   frontend:
+    env_file:
+      - .env
     build:
       context: client
+    #    volumes:
+    #      - ./client:/app
     environment:
+      VITE_WS_URL: "ws://host.docker.internal:3333"
+    ports:
+      - "${HOST_FRONTEND_PORT:-3000}:80"
+  db:
+    image: postgres:15
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "${HOST_DB_PORT:-5432}:5432"
+
+volumes:
+  pg_data:
