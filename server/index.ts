@@ -14,12 +14,11 @@ const sql = postgres({
     password: Bun.env.POSTGRES_PASSWORD,
 });
 
-// Create Table if not exists
 await sql`
     CREATE TABLE IF NOT EXISTS letters (
         userId TEXT NOT NULL,
         letter TEXT NOT NULL,
-        timestamp INTEGER NOT NULL
+        timestamp TIMESTAMP NOT NULL
     );
 `;
 
