@@ -11,6 +11,37 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
+
+    .backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loader {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 </style>
 
 <script lang="ts">
@@ -21,6 +52,7 @@
 
     let socket: WebSocket;
     let userId: string;
+    let isConnected = false;
 
     let value: string = '';
     let previousValue: string = '';
@@ -35,6 +67,7 @@
         socket = new WebSocket(WS_URL);
 
         socket.onopen = (data) => {
+            isConnected = true;
             userId = cookie.parse(document.cookie)['userId'];
             console.log(`WebSocket Client Connected. User ID: ${userId}`);
         };
@@ -51,6 +84,7 @@
         };
 
         socket.onclose = () => {
+            isConnected = false;
             console.log('WebSocket Client Disconnected');
         };
     });
@@ -96,11 +130,16 @@
     bg-amber-100
     dark:bg-slate-950
 ">
-  <textarea
-          bind:value={value}
-          on:input={handleInput}
-          on:beforeinput={focusTextarea}
-          class="
+    {#if !isConnected}
+        <div class="backdrop">
+            <div class="loader"></div>
+        </div>
+    {/if}
+    <textarea
+            bind:value={value}
+            on:input={handleInput}
+            on:beforeinput={focusTextarea}
+            class="
             h-full w-full
             resize-none
             px-5 pt-5 pb-96
@@ -115,7 +154,7 @@
             text-xl
             overflow-y-auto
           "
-          spellcheck="false"
-          placeholder="Просто пиши"
-  ></textarea>
+            spellcheck="false"
+            placeholder="Просто пиши"
+    ></textarea>
 </main>
