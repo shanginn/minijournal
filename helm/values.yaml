@@ -1,0 +1,25 @@
+images:
+  server:
+    repository: ghcr.io/shanginn/minijournal-server
+    pullPolicy: Always
+    tag: "latest"
+  client:
+    repository: ghcr.io/shanginn/minijournal-client
+    pullPolicy: Always
+    tag: "latest"
+
+server_ws_port: 3333
+frontend_port: 80
+
+serviceAccount:
+  create: true
+  name: "minijournal"
+
+env:
+  POSTGRES_HOST: pgsql-postgresql.pgsql
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: minijournal
+
+envSecrets:
+  POSTGRES_PASSWORD: ""
+  POSTGRES_USER: ""

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "minijournal.fullname" . }}-test-connection"
+  labels:
+    {{- include "minijournal.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: [ 'wget' ]
+      args: [ '{{ include "minijournal.fullname" . }}:{{ .Values.frontend_port }}' ]
+  restartPolicy: Never
