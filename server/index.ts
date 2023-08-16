@@ -1,81 +1,74 @@
 import {v4 as uuid} from 'uuid';
 import cookie from 'cookie';
-import {Database, Statement} from "bun:sqlite";
 import {Message, MessageType, Word, Letter} from "./types";
 
-const appPort = Bun.env.APP_PORT || "3333";
+import postgres from 'postgres';
 
-const db = new Database("db.sqlite", {create: true});
+const appPort = process.env.APP_PORT || "3333";
 
-db.run(`
+const sql = postgres({
+    host: Bun.env.POSTGRES_HOST,
+    port: parseInt(Bun.env.POSTGRES_PORT || "5432"),
+    database: Bun.env.POSTGRES_DATABASE,
+    username: Bun.env.POSTGRES_USER,
+    password: Bun.env.POSTGRES_PASSWORD,
+});
+
+// Create Table if not exists
+await sql`
     CREATE TABLE IF NOT EXISTS letters (
         userId TEXT NOT NULL,
         letter TEXT NOT NULL,
         timestamp INTEGER NOT NULL
     );
-`);
+`;
 
 class WordProcessor {
-    private readonly db: Database;
+    private readonly sql;
     private readonly userId: string;
     private memory: Map<string, Letter[]> = new Map();
 
-    constructor(userId: string, db: Database) {
+    constructor(userId: string, sql: postgres.Sql) {
         this.userId = userId;
-        this.db = db;
+        this.sql = sql;
     }
 
-    processLetter(letter: Letter) {
+    async processLetter(letter: Letter) {
         const letters = this.memory.get(this.userId) || [];
         letters.push(letter);
 
         this.memory.set(this.userId, letters);
 
         if (letters.length >= 10) {
-            this.saveLetters(letters);
+            await this.saveLetters(letters);
             this.memory.set(this.userId, []);
         }
     }
 
-    saveLetters(letters: Letter[]) {
-        const insertQuery = this.db.prepare(
-            `INSERT INTO letters (userId, letter, timestamp) VALUES ($userId, $letter, $timestamp)`
-        )
-
-        const insert = this.db.transaction(
-            (letters: Letter[]) => {
-                for (const letter of letters) {
-                    insertQuery.run({
-                        $userId: this.userId,
-                        $letter: letter.letter,
-                        $timestamp: letter.timestamp
-                    });
-                }
-
-                return letters.length;
-            }
-        )
-
-        insert.immediate(letters);
+    async saveLetters(letters: Letter[]) {
+        for (const letter of letters) {
+            await this.sql`
+                INSERT INTO letters (userId, letter, timestamp)
+                VALUES (${this.userId}, ${letter.letter}, ${letter.timestamp})
+            `;
+        }
     }
 
-    getLetters() {
-        const query: Statement<Letter> = this.db.query(`
+    async getLetters() {
+        const query = await this.sql`
             SELECT letter, timestamp
             FROM letters
-            WHERE userId = $userId
+            WHERE userId = ${this.userId}
             ORDER BY timestamp ASC
-        `);
+        `;
 
-        return query.all({
-            $userId: this.userId
-        });
+        return query;
     }
 
-    flush(timestamp: number) {
+    async flush(timestamp: number) {
         const remainingLetters = this.memory.get(this.userId) || null;
         if (remainingLetters) {
-            this.saveLetters(remainingLetters);
+            await this.saveLetters(remainingLetters);
             this.memory.set(this.userId, []);
         }
     }
@@ -90,7 +83,7 @@ const server = Bun.serve<{ userId: string }>({
         const userId = cookies["userId"] || uuid().toString();
 
         if (!processors.has(userId)) {
-            processors.set(userId, new WordProcessor(userId, db));
+            processors.set(userId, new WordProcessor(userId, sql));
         }
 
 
@@ -112,7 +105,7 @@ const server = Bun.serve<{ userId: string }>({
             const {userId} = ws.data;
 
             // Get the words for the user
-            const letters = processors.get(userId)?.getLetters() || [];
+            const letters = await processors.get(userId)?.getLetters() || [];
 
             const text = letters.map((letter) => letter.letter).join('');
 
