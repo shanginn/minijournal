@@ -65,6 +65,8 @@ jobs:
           chmod 600 ~/.kube/config
 
       - name: Deploy app
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           cd helm
           helm upgrade minijournal --namespace=minijournal -f values.yaml . \
