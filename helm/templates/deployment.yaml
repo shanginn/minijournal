@@ -47,7 +47,7 @@ spec:
           imagePullPolicy: {{ .Values.images.client.pullPolicy }}
           ports:
             - name: nginx
-              containerPort: {{ .Values.frontend_port }}
+              containerPort: 80
               protocol: TCP
           livenessProbe:
             httpGet:

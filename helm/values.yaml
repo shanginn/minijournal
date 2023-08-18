@@ -11,10 +11,20 @@ images:
     tag: "latest"
 
 server_ws_port: 3333
-frontend_port: 80
 service:
-  type: NodePort
-  port: 30080
+  client:
+    type: ClusterIP
+    port: 30080
+
+ingress:
+  enabled: true
+  annotations: { }
+  hosts:
+    - "xn--b1abcbftdmxceabz.xn--p1ai"
+  tls: [ ]
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
 
 serviceAccount:
   create: true
