@@ -155,6 +155,6 @@
             overflow-y-auto
           "
             spellcheck="false"
-            placeholder="Просто пиши"
+            placeholder="Это ваш личный дневник из которого нельзя удалять и редактировать записи"
     ></textarea>
 </main>
