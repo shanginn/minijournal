@@ -22,13 +22,13 @@ const sql = postgres({
     password: Bun.env.POSTGRES_PASSWORD,
 });
 
-// await sql`
-//     CREATE TABLE IF NOT EXISTS letters (
-//         userId TEXT NOT NULL,
-//         letter TEXT NOT NULL,
-//         timestamp TIMESTAMP NOT NULL
-//     );
-// `;
+await sql`
+    CREATE TABLE IF NOT EXISTS letters (
+        userId TEXT NOT NULL,
+        letter TEXT NOT NULL,
+        timestamp TIMESTAMP NOT NULL
+    );
+`;
 
 class WordProcessor {
     private readonly sql;
